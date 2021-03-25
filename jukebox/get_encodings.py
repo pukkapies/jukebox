@@ -16,7 +16,7 @@ sample_options = {
 rank, local_rank, device = setup_dist_from_mpi(port=29500)
 print("Device: {}".format(device))
 
-# hps = Hyperparams(**sample_options)
-# hps = setup_hparams("vqvae", dict(sample_length=hps.get('sample_length', 0),
-#                                   sample_length_in_seconds=hps.get('sample_length_in_seconds', 0)))
-# vqvae = make_vqvae(hps, 'cuda:0')
+hps = Hyperparams(**sample_options)
+hps = setup_hparams("vqvae", dict(sample_length=hps.get('sample_length', 0),
+                                  sample_length_in_seconds=hps.get('sample_length_in_seconds', 0)))
+vqvae = make_vqvae(hps, 'cuda:0')
