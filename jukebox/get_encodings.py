@@ -38,9 +38,6 @@ def get_bandwidth(mp3, hps):
 
 
 def save_spec_plot(spec, path, title=None):
-    print("")
-    print("LEN spec", len(spec))
-
     if type(spec) == np.ndarray:
         fig = plt.figure(figsize=(25, 5))
         plt.imshow(librosa.core.power_to_db(spec[::-1, :]))
@@ -171,6 +168,7 @@ for client_name in mp3_dict:
 
         inputs = audio_preprocess(inputs, hps)
         x_outs, loss, _metrics = vqvae(inputs, **forw_kwargs, return_all_x_outs=True)  # x_outs with top level first
+        print(len(x_outs))
 
         # print("Loss: {}".format(loss))
         # print("Metrics:", _metrics)
@@ -183,6 +181,8 @@ for client_name in mp3_dict:
                                      x_out_np, sr=44100)
             x_out_spec = spec(x_out.squeeze().cpu(), hps).numpy()
             out_specs.append(x_out_spec)
+        print(len(out_specs))
+        exit(0)
         save_spec_plot([mp3_spec] + [out_specs], os.path.join(output_folder, client_name, 'spec', filename.split('.')[0] + '.png'),
                        title=filename.split('.')[0])
 
