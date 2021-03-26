@@ -27,7 +27,7 @@ class Resnet(nn.Module):
 class ResConv1DBlock(nn.Module):
     def __init__(self, n_in, n_state, dilation=1, zero_out=False, res_scale=1.0):
         super().__init__()
-        padding = dilation
+        padding = dilation  # This gives 'SAME' padding
         self.model = nn.Sequential(
             nn.ReLU(),
             nn.Conv1d(n_in, n_state, 3, 1, padding, dilation),
@@ -44,7 +44,11 @@ class ResConv1DBlock(nn.Module):
         return x + self.res_scale * self.model(x)
 
 class Resnet1D(nn.Module):
-    def __init__(self, n_in, n_depth, m_conv=1.0, dilation_growth_rate=1, dilation_cycle=None, zero_out=False, res_scale=False, reverse_dilation=False, checkpoint_res=False):
+    def __init__(self, n_in, n_depth, m_conv=1.0, dilation_growth_rate=1, dilation_cycle=None, zero_out=False,
+                 res_scale=False, reverse_dilation=False, checkpoint_res=False):
+        # Defaults:
+        # n_in=64 (level 0) or 32, n_depth=8 (level 0) or 4, m_conv=1.0, dilation_growth_rate=3, dilation_cycle=None,
+        # zero_out=False, res_scale=False, reverse_dilation=False, checkpoint_res=False
         super().__init__()
         def _get_depth(depth):
             if dilation_cycle is None:

@@ -267,6 +267,9 @@ def save_samples(model, device, hps, sample_hps):
 
 
 def run(model, mode='ancestral', codes_file=None, audio_file=None, prompt_length_in_seconds=None, port=29500, **kwargs):
+    # Example call:
+    # model=5b, name=sample_5b, levels=3, sample_length_in_seconds=20, total_sample_length_in_seconds=180,
+    # sr=44100, n_samples=6, hop_fraction=[0.5, 0.5, 0.125]
     from jukebox.utils.dist_utils import setup_dist_from_mpi
     rank, local_rank, device = setup_dist_from_mpi(port=port)
     hps = Hyperparams(**kwargs)

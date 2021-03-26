@@ -44,7 +44,11 @@ class VQVAE(nn.Module):
                  emb_width, l_bins, mu, commit, spectral, multispectral,
                  multipliers=None, use_bottleneck=True, **block_kwargs):
         super().__init__()
-
+        # With the vqvae defaults, the args above are
+        # input_shape=(881920, 1), levels=3, downs_t=(3, 2, 2), strides_t=(2, 2, 2), emb_width=64, l_bins=2048,
+        # mu=0.99, commit=0.02, spectral=0.0, multispectral=1.0, multipliers=(2, 1, 1), use_bottleneck=True
+        # # block_kwargs is
+        # {'width': 32, 'depth': 4, 'm_conv': 1.0, 'dilation_growth_rate': 3, 'dilation_cycle': None, 'reverse_decoder_dilation': True}
         self.sample_length = input_shape[0]
         x_shape, x_channels = input_shape[:-1], input_shape[-1]
         self.x_shape = x_shape

@@ -8,6 +8,10 @@ class EncoderConvBlock(nn.Module):
                  stride_t, width, depth, m_conv,
                  dilation_growth_rate=1, dilation_cycle=None, zero_out=False,
                  res_scale=False):
+        # Defaults:
+        # input_emb_width=1 (level 0) or 64, output_emb_width=64, down_t=3 (level 0) or 2, stride_t=2,
+        # width=64 (level 0) or 32, depth=8 (level 0) or 4, m_conv=1.0, dilation_growth_rate=3, dilation_cycle=None,
+        # zero_out=False, res_scale=False
         super().__init__()
         blocks = []
         filter_t, pad_t = stride_t * 2, stride_t // 2
@@ -48,6 +52,9 @@ class DecoderConvBock(nn.Module):
 class Encoder(nn.Module):
     def __init__(self, input_emb_width, output_emb_width, levels, downs_t,
                  strides_t, **block_kwargs):
+        # With defaults: 1, 64, level+1, (3, 2, 2)[:level+1], (2, 2, 2)[:level+1], block_kwargs with width&depth multiplied by multiplier
+        # # block_kwargs is
+        # {'width': 32, 'depth': 4, 'm_conv': 1.0, 'dilation_growth_rate': 3, 'dilation_cycle': None, 'reverse_decoder_dilation': True}
         super().__init__()
         self.input_emb_width = input_emb_width
         self.output_emb_width = output_emb_width

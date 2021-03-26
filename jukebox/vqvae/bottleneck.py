@@ -181,6 +181,8 @@ class BottleneckBlock(nn.Module):
 
 class Bottleneck(nn.Module):
     def __init__(self, l_bins, emb_width, mu, levels):
+        # Defaults for VQ-VAE:
+        # emb_width=64, l_bins=2048, mu=0.99, levels=3
         super().__init__()
         self.levels = levels
         level_block = lambda level: BottleneckBlock(l_bins, emb_width, mu)
