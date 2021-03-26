@@ -38,6 +38,9 @@ def get_bandwidth(mp3, hps):
 
 
 def save_spec_plot(spec, path, title=None):
+    print("")
+    print("LEN spec", len(spec))
+
     if type(spec) == np.ndarray:
         fig = plt.figure(figsize=(25, 5))
         plt.imshow(librosa.core.power_to_db(spec[::-1, :]))
