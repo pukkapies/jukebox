@@ -91,3 +91,5 @@ x_out, loss, _metrics = vqvae(inputs, **forw_kwargs)
 
 print("Loss: {}".format(loss))
 print("Metrics:", _metrics)
+librosa.output.write_wav("./{}_recon.wav".format(filename.split('.')[0]), x_out.cpu().squeeze().numpy(), sr=44100)
+print(x_out.shape)
