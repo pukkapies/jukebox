@@ -49,7 +49,7 @@ def save_spec_plot(spec, path, title=None):
 
 
 # mp3_folder = '/srv/audio_mp3s/uploads/5f2b0f6df270d976b43cdafc'
-audio_mp3s_folder = 'srv/audio_mp3s'
+audio_mp3s_folder = '/srv/audio_mp3s'
 json_path = '/home/kevin/feedforward/mp3s_for_jukebox_test.json'
 mp3_dict = load_json(json_path)
 output_folder = '/home/kevin/pukkapies_github/jukebox/tests'
@@ -113,7 +113,8 @@ for client_name in mp3_dict:
     if not os.path.exists(os.path.join(output_folder, client_name)):
         os.makedirs(os.path.join(output_folder, client_name))
 
-    for mp3_metadata in mp3_dict:  # 'external_id', 'media_id', 'num_samples', 's3_key'
+    for mp3_metadata in mp3_dict[client_name]:  # 'external_id', 'media_id', 'num_samples', 's3_key'
+        print(mp3_metadata)
         s3_key = mp3_metadata['s3_key']
         filename = s3_key.split('/')[-1]
         mp3_path = os.path.join(audio_mp3s_folder, s3_key)
