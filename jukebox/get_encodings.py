@@ -48,22 +48,23 @@ def save_spec_plot(spec, path, title=None):
         plt.colorbar()
     elif type(spec) == list:
         assert (type(spec[0]) == np.ndarray) and (type(spec[1]) == np.ndarray)
-        plt.figure(figsize=(50, 5))
-        fig = plt.subplot(2, 1, 1)
-        plt.imshow(librosa.core.power_to_db(spec[0][::-1, :]))
-        plt.xlabel("Time")
-        plt.ylabel("Frequency")
-        if title:
-            plt.title(title)
-        plt.colorbar()
+        fig, (ax1, ax2) = plt.subplots(nrows=2, ncols=1, figsize=(50, 5))
+        fig.tight_layout()
 
-        fig = plt.subplot(2, 1, 2)
-        plt.imshow(librosa.core.power_to_db(spec[1][::-1, :]))
-        plt.xlabel("Time")
-        plt.ylabel("Frequency")
+        im = ax1.imshow(librosa.core.power_to_db(spec[0][::-1, :]), vmin=-60, vmax=20)
+        ax1.set_xlabel("Time")
+        ax1.set_ylabel("Frequency")
         if title:
-            plt.title(title + " reconstruction")
-        plt.colorbar()
+            ax1.set_title(title)
+
+        im = ax2.imshow(librosa.core.power_to_db(spec[1][::-1, :]), vmin=-60, vmax=20)
+        ax2.set_xlabel("Time")
+        ax2.set_ylabel("Frequency")
+
+        fig.subplots_adjust(right=0.83)
+        cbar_ax = fig.add_axes([0.55, 0.1, 0.005, 0.8])
+        fig.colorbar(im, cax=cbar_ax)
+        fig.subplots_adjust(hspace=0.6)
     else:
         raise NotImplementedError("spec arg must be array or list of 2 arrays")
 
@@ -147,7 +148,10 @@ for client_name in mp3_dict:
         filename = s3_key.split('/')[-1]
         mp3_path = os.path.join(audio_mp3s_folder, s3_key)
         mp3, _ = librosa.core.load(mp3_path, sr=44100)
-        shutil.copyfile(mp3_path, os.path.join(output_folder, client_name, 'audio', mp3_path.split('/')[-1]))
+        librosa.output.write_wav("{}/{}.wav".format(os.path.join(output_folder, client_name, 'audio'),
+                                                    filename.split('.')[0]),
+                                 mp3, sr=44100)
+        # shutil.copyfile(mp3_path, os.path.join(output_folder, client_name, 'audio', mp3_path.split('/')[-1]))
 
         hps.bandwidth = get_bandwidth(mp3, hps)
         inputs = torch.tensor(mp3[:881920]).view(1, -1, 1).to(device)
