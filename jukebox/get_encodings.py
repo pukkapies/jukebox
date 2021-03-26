@@ -3,6 +3,7 @@ from jukebox.make_models import make_vqvae
 from jukebox.utils.dist_utils import setup_dist_from_mpi
 from jukebox.data.data_processor import DataProcessor
 import jukebox.utils.dist_adapter as dist
+from jukebox.utils.audio_utils import audio_preprocess
 
 import torch.distributed as dist
 
@@ -14,7 +15,7 @@ from random import shuffle
 import librosa
 
 def get_bandwidth(mp3, hps):
-    stft = librosa.core.stft(np.mean(mp3, axis=1), hps.n_fft, hop_length=hps.hop_length, win_length=hps.window_size)
+    stft = librosa.core.stft(mp3, hps.n_fft, hop_length=hps.hop_length, win_length=hps.window_size)
     spec = np.absolute(stft)
     spec_norm_total = np.linalg.norm(spec)
     spec_nelem = 1
@@ -85,4 +86,8 @@ hps.bs_sample = hps.nworkers = hps.bs = 1
 
 hps.bandwidth = get_bandwidth(mp3, hps)
 inputs = torch.tensor(mp3[:881920]).view(1, -1, 1).to(device)
-outputs = vqvae(inputs, **forw_kwargs)
+inputs = audio_preprocess(inputs, hps)
+x_out, loss, _metrics = vqvae(inputs, **forw_kwargs)
+
+print("Loss: {}".format(loss))
+print("Metrics:", _metrics)
