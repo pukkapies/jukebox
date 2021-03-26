@@ -7,10 +7,26 @@ import jukebox.utils.dist_adapter as dist
 import torch.distributed as dist
 
 import sys
+import numpy as np
 import torch
 import os
 from random import shuffle
 import librosa
+
+def get_bandwidth(mp3, hps):
+    stft = librosa.core.stft(np.mean(mp3, axis=1), hps.n_fft, hop_length=hps.hop_length, win_length=hps.window_size)
+    spec = np.absolute(stft)
+    spec_norm_total = np.linalg.norm(spec)
+    spec_nelem = 1
+    n_seen = int(np.prod(mp3.shape))
+    l1 = np.sum(np.abs(mp3))
+    total = np.sum(mp3)
+    total_sq = np.sum(mp3 ** 2)
+    mean = total / n_seen
+    bandwidth = dict(l2=total_sq / n_seen - mean ** 2,
+                     l1=l1 / n_seen,
+                     spec=spec_norm_total / spec_nelem)
+    return bandwidth
 
 mp3_folder = '/srv/audio_mp3s/uploads/5f2b0f6df270d976b43cdafc'
 mp3_paths = [f for f in os.listdir(mp3_folder) if f.endswith(".mp3")]
@@ -63,11 +79,10 @@ print(mp3[:881920].shape)
 
 forw_kwargs = dict(loss_fn=hps.loss_fn, hps=hps)
 
-hps.ngpus = dist.get_world_size()
+# hps.ngpus = dist.get_world_size()
 hps.argv = " ".join(sys.argv)
-hps.bs_sample = hps.nworkers = hps.bs
+hps.bs_sample = hps.nworkers = hps.bs = 1
 
-data_processor = DataProcessor(hps)
-
+hps.bandwidth = get_bandwidth(mp3, hps)
 inputs = torch.tensor(mp3[:881920]).view(1, -1, 1).to(device)
 outputs = vqvae(inputs, **forw_kwargs)
