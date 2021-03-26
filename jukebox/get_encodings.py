@@ -38,14 +38,38 @@ def get_bandwidth(mp3, hps):
 
 
 def save_spec_plot(spec, path, title=None):
-    fig = plt.figure(figsize=(7, 7))
-    plt.imshow(spec)
-    plt.xlabel("Time")
-    plt.ylabel("Frequency")
-    if title:
-        plt.title(title)
+    if type(spec) == np.ndarray:
+        fig = plt.figure(figsize=(25, 5))
+        plt.imshow(librosa.core.power_to_db(spec[::-1, :]))
+        plt.xlabel("Time")
+        plt.ylabel("Frequency")
+        if title:
+            plt.title(title)
+        plt.colorbar()
+    elif type(spec) == list:
+        assert (type(spec[0]) == np.ndarray) and (type(spec[1]) == np.ndarray)
+        plt.figure(figsize=(50, 5))
+        fig = plt.subplot(2, 1, 1)
+        plt.imshow(librosa.core.power_to_db(spec[0][::-1, :]))
+        plt.xlabel("Time")
+        plt.ylabel("Frequency")
+        if title:
+            plt.title(title)
+        plt.colorbar()
+
+        fig = plt.subplot(2, 1, 2)
+        plt.imshow(librosa.core.power_to_db(spec[1][::-1, :]))
+        plt.xlabel("Time")
+        plt.ylabel("Frequency")
+        if title:
+            plt.title(title + " reconstruction")
+        plt.colorbar()
+    else:
+        raise NotImplementedError("spec arg must be array or list of 2 arrays")
+
     plt.savefig(path, bbox_inches='tight')
     fig.close()
+
 
 
 # mp3_folder = '/srv/audio_mp3s/uploads/5f2b0f6df270d976b43cdafc'
@@ -128,9 +152,9 @@ for client_name in mp3_dict:
         hps.bandwidth = get_bandwidth(mp3, hps)
         inputs = torch.tensor(mp3[:881920]).view(1, -1, 1).to(device)
 
-        mp3_spec = spec(inputs, hps).copy().numpy()
-        save_spec_plot(mp3_spec, os.path.join(output_folder, client_name, 'spec', filename.split('.')[0], '.png'),
-                       title=filename.split('.')[0])
+        mp3_spec = spec(inputs.squeeze(), hps).numpy()
+        # save_spec_plot(mp3_spec, os.path.join(output_folder, client_name, 'spec', filename.split('.')[0] + '.png'),
+        #                title=filename.split('.')[0])
 
         inputs = audio_preprocess(inputs, hps)
         x_out, loss, _metrics = vqvae(inputs, **forw_kwargs)
@@ -141,9 +165,9 @@ for client_name in mp3_dict:
         librosa.output.write_wav("{}/{}_recon.wav".format(os.path.join(output_folder, client_name, 'audio'),
                                                           filename.split('.')[0]),
                                  x_out_np, sr=44100)
-        x_out_spec = spec(x_out, hps).copy().numpy()
-        save_spec_plot(x_out_spec, os.path.join(output_folder, client_name, 'spec', filename.split('.')[0], '_recon.png'),
-                       title=filename.split('.')[0] + " reconstruction")
+        x_out_spec = spec(x_out.squeeze(), hps).numpy()
+        save_spec_plot([mp3_spec, x_out_spec], os.path.join(output_folder, client_name, 'spec', filename.split('.')[0] + '.png'),
+                       title=filename.split('.')[0])
 
         csv['client'].append(client_name)
         csv['media_id'].append(mp3_metadata['media_id'])
