@@ -68,7 +68,7 @@ def save_spec_plot(spec, path, title=None):
         raise NotImplementedError("spec arg must be array or list of 2 arrays")
 
     plt.savefig(path, bbox_inches='tight')
-    fig.close()
+    plt.close()
 
 
 
