@@ -124,12 +124,14 @@ for client_name in mp3_dict:
         mp3_path = os.path.join(audio_mp3s_folder, s3_key)
         mp3, _ = librosa.core.load(mp3_path, sr=44100)
         shutil.copyfile(mp3_path, os.path.join(output_folder, client_name, 'audio', mp3_path.split('/')[-1]))
-        mp3_spec = spec(mp3, hps)
-        save_spec_plot(mp3_spec, os.path.join(output_folder, client_name, 'spec', filename.split('.')[0], '.png'),
-                       title=filename.split('.')[0])
 
         hps.bandwidth = get_bandwidth(mp3, hps)
         inputs = torch.tensor(mp3[:881920]).view(1, -1, 1).to(device)
+
+        mp3_spec = spec(inputs, hps).copy().numpy()
+        save_spec_plot(mp3_spec, os.path.join(output_folder, client_name, 'spec', filename.split('.')[0], '.png'),
+                       title=filename.split('.')[0])
+
         inputs = audio_preprocess(inputs, hps)
         x_out, loss, _metrics = vqvae(inputs, **forw_kwargs)
 
@@ -139,7 +141,7 @@ for client_name in mp3_dict:
         librosa.output.write_wav("{}/{}_recon.wav".format(os.path.join(output_folder, client_name, 'audio'),
                                                           filename.split('.')[0]),
                                  x_out_np, sr=44100)
-        x_out_spec = spec(x_out_np, hps)
+        x_out_spec = spec(x_out, hps).copy().numpy()
         save_spec_plot(x_out_spec, os.path.join(output_folder, client_name, 'spec', filename.split('.')[0], '_recon.png'),
                        title=filename.split('.')[0] + " reconstruction")
 
