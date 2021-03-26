@@ -112,6 +112,10 @@ hps.bs_sample = hps.nworkers = hps.bs = 1
 for client_name in mp3_dict:
     if not os.path.exists(os.path.join(output_folder, client_name)):
         os.makedirs(os.path.join(output_folder, client_name))
+    if not os.path.exists(os.path.join(output_folder, client_name, 'audio')):
+        os.makedirs(os.path.join(output_folder, client_name, 'audio'))
+    if not os.path.exists(os.path.join(output_folder, client_name, 'spec')):
+        os.makedirs(os.path.join(output_folder, client_name, 'spec'))
 
     for mp3_metadata in mp3_dict[client_name]:  # 'external_id', 'media_id', 'num_samples', 's3_key'
         print(mp3_metadata)
