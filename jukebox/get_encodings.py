@@ -152,7 +152,7 @@ for client_name in mp3_dict:
         hps.bandwidth = get_bandwidth(mp3, hps)
         inputs = torch.tensor(mp3[:881920]).view(1, -1, 1).to(device)
 
-        mp3_spec = spec(inputs.squeeze(), hps).numpy()
+        mp3_spec = spec(inputs.squeeze().cpu(), hps).numpy()
         # save_spec_plot(mp3_spec, os.path.join(output_folder, client_name, 'spec', filename.split('.')[0] + '.png'),
         #                title=filename.split('.')[0])
 
@@ -165,7 +165,7 @@ for client_name in mp3_dict:
         librosa.output.write_wav("{}/{}_recon.wav".format(os.path.join(output_folder, client_name, 'audio'),
                                                           filename.split('.')[0]),
                                  x_out_np, sr=44100)
-        x_out_spec = spec(x_out.squeeze(), hps).numpy()
+        x_out_spec = spec(x_out.squeeze().cpu(), hps).numpy()
         save_spec_plot([mp3_spec, x_out_spec], os.path.join(output_folder, client_name, 'spec', filename.split('.')[0] + '.png'),
                        title=filename.split('.')[0])
 
