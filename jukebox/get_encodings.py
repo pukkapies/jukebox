@@ -47,22 +47,28 @@ def save_spec_plot(spec, path, title=None):
             plt.title(title)
         plt.colorbar()
     elif type(spec) == list:
-        assert (type(spec[0]) == np.ndarray) and (type(spec[1]) == np.ndarray)
-        fig, (ax1, ax2) = plt.subplots(nrows=2, ncols=1, figsize=(50, 5))
+        assert len(spec) == 4
+        for s in spec:
+            assert type(s) == np.ndarray
+        fig, axs = plt.subplots(nrows=4, ncols=1, figsize=(200, 5))
         fig.tight_layout()
 
+        ax1 = axs[0]
         im = ax1.imshow(librosa.core.power_to_db(spec[0][::-1, :]), vmin=-60, vmax=20)
         ax1.set_xlabel("Time")
         ax1.set_ylabel("Frequency")
         if title:
             ax1.set_title(title)
 
-        im = ax2.imshow(librosa.core.power_to_db(spec[1][::-1, :]), vmin=-60, vmax=20)
-        ax2.set_xlabel("Time")
-        ax2.set_ylabel("Frequency")
+        for i in range(1, 4):
+            im = axs[i].imshow(librosa.core.power_to_db(spec[i][::-1, :]), vmin=-60, vmax=20)
+            axs[i].set_xlabel("Time")
+            axs[i].set_ylabel("Frequency")
+            if title:
+                axs[i].set_title(title + " level {}".format(i))
 
         fig.subplots_adjust(right=0.83)
-        cbar_ax = fig.add_axes([0.55, 0.1, 0.005, 0.8])
+        cbar_ax = fig.add_axes([0.7, 0.1, 0.01, 0.7])
         fig.colorbar(im, cax=cbar_ax)
         fig.subplots_adjust(hspace=0.6)
     else:
@@ -161,16 +167,20 @@ for client_name in mp3_dict:
         #                title=filename.split('.')[0])
 
         inputs = audio_preprocess(inputs, hps)
-        x_out, loss, _metrics = vqvae(inputs, **forw_kwargs)
+        x_outs, loss, _metrics = vqvae(inputs, **forw_kwargs, return_all_x_outs=True)  # x_outs with top level first
 
         # print("Loss: {}".format(loss))
         # print("Metrics:", _metrics)
-        x_out_np = x_out.cpu().squeeze().numpy()
-        librosa.output.write_wav("{}/{}_recon.wav".format(os.path.join(output_folder, client_name, 'audio'),
-                                                          filename.split('.')[0]),
-                                 x_out_np, sr=44100)
-        x_out_spec = spec(x_out.squeeze().cpu(), hps).numpy()
-        save_spec_plot([mp3_spec, x_out_spec], os.path.join(output_folder, client_name, 'spec', filename.split('.')[0] + '.png'),
+
+        out_specs = []
+        for i, x_out in enumerate(reversed(x_outs)):  # level 0 (bottom) first
+            x_out_np = x_out.cpu().squeeze().numpy()
+            librosa.output.write_wav("{}/{}_recon{}.wav".format(os.path.join(output_folder, client_name, 'audio'),
+                                                              filename.split('.')[0], i),
+                                     x_out_np, sr=44100)
+            x_out_spec = spec(x_out.squeeze().cpu(), hps).numpy()
+            out_specs.append(x_out_spec)
+        save_spec_plot([mp3_spec] + [out_specs], os.path.join(output_folder, client_name, 'spec', filename.split('.')[0] + '.png'),
                        title=filename.split('.')[0])
 
         csv['client'].append(client_name)

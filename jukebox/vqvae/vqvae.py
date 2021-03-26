@@ -151,7 +151,7 @@ class VQVAE(nn.Module):
         zs = [t.randint(0, self.l_bins, size=(n_samples, *z_shape), device='cuda') for z_shape in self.z_shapes]
         return self.decode(zs)
 
-    def forward(self, x, hps, loss_fn='l1'):
+    def forward(self, x, hps, loss_fn='l1', return_all_x_outs=False):
         metrics = {}
 
         N = x.shape[0]
@@ -191,9 +191,11 @@ class VQVAE(nn.Module):
         multispec_loss = t.zeros(()).to(x.device)
         x_target = audio_postprocess(x.float(), hps)
 
+        all_xouts = []
         for level in reversed(range(self.levels)):
             x_out = self.postprocess(x_outs[level])
             x_out = audio_postprocess(x_out, hps)
+            all_xouts.append(x_out)
             this_recons_loss = _loss_fn(loss_fn, x_target, x_out, hps)
             this_spec_loss = _spectral_loss(x_target, x_out, hps)
             this_multispec_loss = _multispectral_loss(x_target, x_out, hps)
@@ -229,4 +231,7 @@ class VQVAE(nn.Module):
         for key, val in metrics.items():
             metrics[key] = val.detach()
 
-        return x_out, loss, metrics
+        if return_all_x_outs:
+            return all_xouts, loss, metrics
+        else:
+            return x_out, loss, metrics
