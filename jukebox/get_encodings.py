@@ -150,7 +150,7 @@ for client_name in mp3_dict:
         mp3, _ = librosa.core.load(mp3_path, sr=44100)
         librosa.output.write_wav("{}/{}.wav".format(os.path.join(output_folder, client_name, 'audio'),
                                                     filename.split('.')[0]),
-                                 mp3, sr=44100)
+                                 mp3[:881920], sr=44100)
         # shutil.copyfile(mp3_path, os.path.join(output_folder, client_name, 'audio', mp3_path.split('/')[-1]))
 
         hps.bandwidth = get_bandwidth(mp3, hps)
