@@ -161,7 +161,7 @@ for client_name in mp3_dict:
 
         # print("Loss: {}".format(loss))
         # print("Metrics:", _metrics)
-        x_out_np = x_out.cpu().squeeze().copy().numpy()
+        x_out_np = x_out.cpu().squeeze().numpy()
         librosa.output.write_wav("{}/{}_recon.wav".format(os.path.join(output_folder, client_name, 'audio'),
                                                           filename.split('.')[0]),
                                  x_out_np, sr=44100)
