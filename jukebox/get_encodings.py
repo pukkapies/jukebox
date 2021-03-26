@@ -171,6 +171,7 @@ for client_name in mp3_dict:
 
         csv['client'].append(client_name)
         csv['media_id'].append(mp3_metadata['media_id'])
+        csv['external_id'].append(mp3_metadata['external_id'])
         csv['s3_key'].append(mp3_metadata['s3_key'])
         for k, v in _metrics.items():
             csv[k].append(float(v.squeeze().cpu().numpy()))
