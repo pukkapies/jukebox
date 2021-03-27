@@ -50,7 +50,7 @@ def save_spec_plot(spec, path, title=None):
         assert len(spec) == 4
         for s in spec:
             assert type(s) == np.ndarray
-        fig, axs = plt.subplots(nrows=4, ncols=1, figsize=(200, 5))
+        fig, axs = plt.subplots(nrows=4, ncols=1, figsize=(30, 10))
         fig.tight_layout()
 
         ax1 = axs[0]
@@ -65,7 +65,7 @@ def save_spec_plot(spec, path, title=None):
             axs[i].set_xlabel("Time")
             axs[i].set_ylabel("Frequency")
             if title:
-                axs[i].set_title(title + " level {}".format(i))
+                axs[i].set_title(title + " level {}".format(i-1), fontsize=8)
 
         fig.subplots_adjust(right=0.83)
         cbar_ax = fig.add_axes([0.7, 0.1, 0.01, 0.7])
@@ -180,7 +180,7 @@ for client_name in mp3_dict:
                                      x_out_np, sr=44100)
             x_out_spec = spec(x_out.squeeze().cpu(), hps).numpy()
             out_specs.append(x_out_spec)
-        
+
         save_spec_plot([mp3_spec] + out_specs, os.path.join(output_folder, client_name, 'spec', filename.split('.')[0] + '.png'),
                        title=filename.split('.')[0])
 
