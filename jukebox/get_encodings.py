@@ -58,14 +58,14 @@ def save_spec_plot(spec, path, title=None):
         ax1.set_xlabel("Time")
         ax1.set_ylabel("Frequency")
         if title:
-            ax1.set_title(title)
+            ax1.set_title(title + " original")
 
         for i in range(1, 4):
             im = axs[i].imshow(librosa.core.power_to_db(spec[i][::-1, :]), vmin=-60, vmax=20)
             axs[i].set_xlabel("Time")
             axs[i].set_ylabel("Frequency")
             if title:
-                axs[i].set_title(title + " level {}".format(i-1), fontsize=8)
+                axs[i].set_title(title + "reconstruction level {}".format(i-1), fontsize=10)
 
         fig.subplots_adjust(right=0.83)
         cbar_ax = fig.add_axes([0.7, 0.1, 0.01, 0.7])
