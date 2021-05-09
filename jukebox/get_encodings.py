@@ -229,6 +229,7 @@ def compute_codes(vqvae, hps, output_folder):
                 level_0_codes.append(codes0.detach().cpu().numpy().tolist())
                 level_1_codes.append(codes1.detach().cpu().numpy().tolist())
                 level_2_codes.append(codes2.detach().cpu().numpy().tolist())
+                mp3_metadata['num_samples'] = int(mp3.size)
                 successful_mp3s.append(mp3_metadata)
 
                 save_as_json(level_0_codes, os.path.join(output_folder, client_name, 'level_0_codes.json'))
