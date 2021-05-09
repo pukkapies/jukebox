@@ -232,14 +232,14 @@ def compute_codes(vqvae, hps, output_folder):
                 mp3_metadata['num_samples'] = int(mp3.size)
                 successful_mp3s.append(mp3_metadata)
 
-                save_as_json(level_0_codes, os.path.join(output_folder, client_name, 'level_0_codes.json'))
-                save_as_json(level_1_codes, os.path.join(output_folder, client_name, 'level_1_codes.json'))
-                save_as_json(level_2_codes, os.path.join(output_folder, client_name, 'level_2_codes.json'))
-
-                save_as_json(successful_mp3s, os.path.join(output_folder, client_name, 'successful_mp3s.json'))
             except Exception as e:
                 continue
 
+        save_as_json(level_0_codes, os.path.join(output_folder, client_name, 'level_0_codes.json'))
+        save_as_json(level_1_codes, os.path.join(output_folder, client_name, 'level_1_codes.json'))
+        save_as_json(level_2_codes, os.path.join(output_folder, client_name, 'level_2_codes.json'))
+
+        save_as_json(successful_mp3s, os.path.join(output_folder, client_name, 'successful_mp3s.json'))
 
 
 # compute_metrics(vqvae, hps, output_folder)
