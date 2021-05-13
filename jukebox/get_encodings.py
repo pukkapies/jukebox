@@ -85,8 +85,8 @@ def save_spec_plot(spec, path, title=None):
 
 
 # mp3_folder = '/srv/audio_mp3s/uploads/5f2b0f6df270d976b43cdafc'
-audio_mp3s_folder = '/srv/audio_mp3s'
-output_folder = '/home/kevin/pukkapies_github/jukebox/tests'
+audio_mp3s_folder = '/s3/figaro-api/'
+output_folder = '/home/ubuntu/jukebox/tests'
 
 sample_options = {
     "name": "sample_5b",
@@ -196,7 +196,7 @@ def compute_metrics(vqvae, hps, output_folder):
 
 
 def compute_codes(vqvae, hps, output_folder):
-    json_path = '/home/kevin/feedforward/sandbox/mp3s_for_jukebox_encodings.json'
+    json_path = '/home/ubuntu/jukebox/jukebox/mp3s_for_jukebox_encodings.json'
     mp3_dict = load_json(json_path)
 
     hps.argv = " ".join(sys.argv)
@@ -205,6 +205,7 @@ def compute_codes(vqvae, hps, output_folder):
     for client_name in mp3_dict:
         level_0_codes, level_1_codes, level_2_codes = [], [], []
         successful_mp3s = []
+        unsuccessful_mp3s = []
 
         if not os.path.exists(os.path.join(output_folder, client_name)):
             os.makedirs(os.path.join(output_folder, client_name))
@@ -213,33 +214,40 @@ def compute_codes(vqvae, hps, output_folder):
             s3_key = mp3_metadata['s3_key']
             filename = s3_key.split('/')[-1]
             mp3_path = os.path.join(audio_mp3s_folder, s3_key)
+
             try:
                 mp3, _ = librosa.core.load(mp3_path, sr=44100)
+            except:
+                unsuccessful_mp3s.append(mp3_path)
+                continue
 
-                hps.bandwidth = get_bandwidth(mp3, hps)
+            hps.bandwidth = get_bandwidth(mp3, hps)
 
-                # Rough test showed that 5M samples fits OK into the GPU, but 5.5M crashes
-                bs_chunks = int(np.ceil(mp3.size / 5e6))
-                inputs = torch.tensor(mp3).view(1, -1, 1).to(device)
+            max_length_per_pass = 5e6
+            num_chunks = int(np.ceil(mp3.size / max_length_per_pass))
+
+            full_codes0, full_codes1, full_codes2 = [], [], []
+            for i in range(num_chunks):
+                inputs = torch.tensor(mp3[i*max_length_per_pass: (i+1)*max_length_per_pass]).view(1, -1, 1).to(device)
 
                 # inputs = audio_preprocess(inputs, hps)  # This doesn't do anything anyway
-                codes0, codes1, codes2 = vqvae.encode(inputs, bs_chunks=bs_chunks)
+                codes0, codes1, codes2 = vqvae.encode(inputs)
+                full_codes0.extend(codes0.detach().cpu().numpy().tolist())
+                full_codes1.extend(codes1.detach().cpu().numpy().tolist())
+                full_codes2.extend(codes2.detach().cpu().numpy().tolist())
 
-                # Success
-                level_0_codes.append(codes0.detach().cpu().numpy().tolist())
-                level_1_codes.append(codes1.detach().cpu().numpy().tolist())
-                level_2_codes.append(codes2.detach().cpu().numpy().tolist())
-                mp3_metadata['num_samples'] = int(mp3.size)
-                successful_mp3s.append(mp3_metadata)
-
-            except Exception as e:
-                continue
+            level_0_codes.append(full_codes0)
+            level_1_codes.append(full_codes1)
+            level_2_codes.append(full_codes2)
+            mp3_metadata['num_samples'] = int(mp3.size)
+            successful_mp3s.append(mp3_metadata)
 
         save_as_json(level_0_codes, os.path.join(output_folder, client_name, 'level_0_codes.json'))
         save_as_json(level_1_codes, os.path.join(output_folder, client_name, 'level_1_codes.json'))
         save_as_json(level_2_codes, os.path.join(output_folder, client_name, 'level_2_codes.json'))
 
         save_as_json(successful_mp3s, os.path.join(output_folder, client_name, 'successful_mp3s.json'))
+        save_as_json(unsuccessful_mp3s, os.path.join(output_folder, client_name, 'unsuccessful_mp3s.json'))
 
 
 # compute_metrics(vqvae, hps, output_folder)

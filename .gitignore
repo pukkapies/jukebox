@@ -2,6 +2,13 @@
 .DS_Store
 .idea
 
+# Samples
+sample_1b/
+sample_5b/
+
+# Folder with results
+Tests/
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
