@@ -223,7 +223,7 @@ def compute_codes(vqvae, hps, output_folder):
 
             hps.bandwidth = get_bandwidth(mp3, hps)
 
-            max_length_per_pass = 5e6
+            max_length_per_pass = int(5e6)
             num_chunks = int(np.ceil(mp3.size / max_length_per_pass))
 
             full_codes0, full_codes1, full_codes2 = [], [], []
