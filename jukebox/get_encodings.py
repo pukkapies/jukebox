@@ -217,30 +217,29 @@ def compute_codes(vqvae, hps, output_folder, json_path):
 
             try:
                 mp3, _ = librosa.core.load(mp3_path, sr=44100)
+                hps.bandwidth = get_bandwidth(mp3, hps)
+
+                max_length_per_pass = int(5e6)
+                num_chunks = int(np.ceil(mp3.size / max_length_per_pass))
+
+                full_codes0, full_codes1, full_codes2 = [], [], []
+                for i in range(num_chunks):
+                    inputs = torch.tensor(mp3[i*max_length_per_pass: (i+1)*max_length_per_pass]).view(1, -1, 1).to(device)
+
+                    # inputs = audio_preprocess(inputs, hps)  # This doesn't do anything anyway
+                    codes0, codes1, codes2 = vqvae.encode(inputs)
+                    full_codes0.extend(codes0.detach().cpu().numpy().tolist())
+                    full_codes1.extend(codes1.detach().cpu().numpy().tolist())
+                    full_codes2.extend(codes2.detach().cpu().numpy().tolist())
+
+                level_0_codes.append(full_codes0)
+                level_1_codes.append(full_codes1)
+                level_2_codes.append(full_codes2)
+                mp3_metadata['num_samples'] = int(mp3.size)
+                successful_mp3s.append(mp3_metadata)
             except:
                 unsuccessful_mp3s.append(mp3_path)
                 continue
-
-            hps.bandwidth = get_bandwidth(mp3, hps)
-
-            max_length_per_pass = int(5e6)
-            num_chunks = int(np.ceil(mp3.size / max_length_per_pass))
-
-            full_codes0, full_codes1, full_codes2 = [], [], []
-            for i in range(num_chunks):
-                inputs = torch.tensor(mp3[i*max_length_per_pass: (i+1)*max_length_per_pass]).view(1, -1, 1).to(device)
-
-                # inputs = audio_preprocess(inputs, hps)  # This doesn't do anything anyway
-                codes0, codes1, codes2 = vqvae.encode(inputs)
-                full_codes0.extend(codes0.detach().cpu().numpy().tolist())
-                full_codes1.extend(codes1.detach().cpu().numpy().tolist())
-                full_codes2.extend(codes2.detach().cpu().numpy().tolist())
-
-            level_0_codes.append(full_codes0)
-            level_1_codes.append(full_codes1)
-            level_2_codes.append(full_codes2)
-            mp3_metadata['num_samples'] = int(mp3.size)
-            successful_mp3s.append(mp3_metadata)
 
         save_as_json(level_0_codes, os.path.join(output_folder, client_name, 'level_0_codes.json'))
         save_as_json(level_1_codes, os.path.join(output_folder, client_name, 'level_1_codes.json'))
