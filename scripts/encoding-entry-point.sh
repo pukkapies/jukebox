@@ -4,7 +4,7 @@ set -exo pipefail
 
 function slack()
 {
-  curl -X POST -H 'Content-type: application/json' --data "{\"text\":\"$1\"}" https://hooks.slack.com/services/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
+  curl -X POST -H 'Content-type: application/json' --data "{\"text\":\"$1\"}" https://hooks.slack.com/services/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
 }
 
 echo "$(date): NEW_ENCODING"
