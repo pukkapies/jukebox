@@ -195,8 +195,8 @@ def compute_metrics(vqvae, hps, output_folder):
             pd.DataFrame(csv).to_csv(os.path.join(output_folder, 'metrics.csv'))
 
 
-def compute_codes(vqvae, hps, output_folder):
-    json_path = '/home/ubuntu/jukebox/jukebox/mp3s_for_jukebox_encodings.json'
+def compute_codes(vqvae, hps, output_folder, json_path):
+    # json_path = '/home/ubuntu/jukebox/jukebox/mp3s_for_jukebox_encodings.json'
     mp3_dict = load_json(json_path)
 
     hps.argv = " ".join(sys.argv)
@@ -251,4 +251,8 @@ def compute_codes(vqvae, hps, output_folder):
 
 
 # compute_metrics(vqvae, hps, output_folder)
-compute_codes(vqvae, hps, output_folder)
+# compute_codes(vqvae, hps, output_folder)
+
+if __name__ == '__main__':
+    json_path = sys.argv[1]
+    compute_codes(vqvae, hps, output_folder, json_path)
